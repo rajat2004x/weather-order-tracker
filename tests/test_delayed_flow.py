@@ -8,12 +8,27 @@ def test_delayed_weather_ai_message():
     weather_main = "Rain"
     weather_description = "heavy rain"
 
-    status = "Delayed" if weather_main in {
-        "Rain",
-        "Snow",
-        "Extreme"
-    } else "Pending"
+    delay_weather = {"Rain", "Snow", "Extreme"}
 
+    status = (
+        "Delayed"
+        if weather_main in delay_weather
+        else "Pending"
+    )
+
+    print("\n" + "=" * 60)
+    print("              GOLDEN FLOW TEST")
+    print("=" * 60)
+
+    print(f"Weather condition : {weather_main}")
+    print(f"Weather detail    : {weather_description}")
+
+    assert status == "Delayed"
+
+    print(f"Delay condition   : YES")
+    print(f"Order status      : {status}")
+
+    # Call the Weather-Aware Apology function
     message = generate_weather_apology(
         customer=customer,
         city=city,
@@ -21,14 +36,17 @@ def test_delayed_weather_ai_message():
         weather_description=weather_description
     )
 
-    assert status == "Delayed"
     assert message
     assert customer in message
     assert city in message
 
-    print("\nDelayed-flow test passed")
-    print(f"Status: {status}")
-    print(f"AI Message: {message}")
+    print("AI function       : generate_weather_apology()")
+    print("AI message        :")
+    print(f"  {message}")
+
+    print("=" * 60)
+    print("✓ GOLDEN FLOW TEST PASSED")
+    print("=" * 60 + "\n")
 
 
 if __name__ == "__main__":

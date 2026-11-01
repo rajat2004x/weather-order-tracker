@@ -3,7 +3,7 @@ import time
 
 from dotenv import load_dotenv
 from google import genai
-from google.genai import errors
+from google.genai import errors, types
 
 
 load_dotenv()
@@ -22,8 +22,8 @@ def generate_weather_apology(
     """
     Generate a personalized weather-aware delivery delay message.
 
-    Retries temporary Gemini server failures before using a safe
-    fallback message.
+    Retries temporary Gemini failures and uses a fallback message
+    if the AI service is unavailable.
     """
 
     prompt = f"""
@@ -46,26 +46,39 @@ Requirements:
     for attempt in range(1, 4):
 
         try:
-
             response = client.models.generate_content(
                 model="gemini-3.8-flash",
-                contents=prompt
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    max_output_tokens=100,
+                    http_options=types.HttpOptions(
+                        timeout=10000
+                    )
+                )
             )
 
             if response.text:
                 return " ".join(response.text.strip().split())
 
-        except errors.ServerError:
+        except errors.ServerError as error:
+
+            print(
+                f"  → Gemini server error "
+                f"(attempt {attempt}/3)"
+            )
 
             if attempt < 3:
                 time.sleep(2)
-            else:
-                break
 
-        except Exception:
+        except Exception as error:
+
+            print(
+                f"  → Gemini request failed: {error}"
+            )
+
             break
 
-    # Safe fallback if the AI service is temporarily unavailable
+    # Safe fallback
     return (
         f"Hi {customer}, your order to {city} is delayed due to "
         f"{weather_description}, and we appreciate your patience."
